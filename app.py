@@ -2,83 +2,128 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 st.set_page_config(
     page_title="Nassau Candy Shipping Analysis",
     page_icon="📊",
     layout="wide"
 )
 
+
 st.title("📊 Factory-to-Customer Shipping Route Efficiency Analysis")
 st.write("Nassau Candy Distributor Dashboard")
 
+
+# Load Dataset
 @st.cache_data
 def load_data():
-    # Load Dataset
+
     df = pd.read_csv("Nassau_Candy_Distributor.csv")
 
-    # Convert Date Columns
     df["Order Date"] = pd.to_datetime(
-    df["Order Date"],
-    errors="coerce"
-)
+        df["Order Date"],
+        errors="coerce"
+    )
 
-df["Ship Date"] = pd.to_datetime(
-    df["Ship Date"],
-    errors="coerce"
-)
+    df["Ship Date"] = pd.to_datetime(
+        df["Ship Date"],
+        errors="coerce"
+    )
 
-    # Calculate Delivery Days
     df["Delivery Days"] = (
         df["Ship Date"] - df["Order Date"]
     ).dt.days
 
     return df
 
+
 # Load Data
 df = load_data()
 
+
+# Sidebar Filters
+
 st.sidebar.header("Filters")
+
 
 region = st.sidebar.selectbox(
     "Select Region",
-    ["All"] + sorted(df["Region"].unique())
+    ["All"] + sorted(df["Region"].dropna().unique())
 )
+
 
 ship_mode = st.sidebar.selectbox(
     "Select Ship Mode",
-    ["All"] + sorted(df["Ship Mode"].unique())
+    ["All"] + sorted(df["Ship Mode"].dropna().unique())
 )
 
 
-# Part 2: Charts & Analysis
+# Apply Filters
 
-# ---------------------------------------
-# Sales by Region
-# ---------------------------------------
+filtered_df = df.copy()
+
+
+if region != "All":
+    filtered_df = filtered_df[
+        filtered_df["Region"] == region
+    ]
+
+
+if ship_mode != "All":
+    filtered_df = filtered_df[
+        filtered_df["Ship Mode"] == ship_mode
+    ]
+
+
+# -----------------------------
+# Sales By Region
+# -----------------------------
 
 st.header("📊 Sales by Region")
 
-region_sales = filtered_df.groupby("Region")["Sales"].sum()
+
+region_sales = (
+    filtered_df.groupby("Region")["Sales"]
+    .sum()
+)
+
 
 fig, ax = plt.subplots(figsize=(8,5))
-region_sales.plot(kind="bar", ax=ax)
+
+region_sales.plot(
+    kind="bar",
+    ax=ax
+)
+
 ax.set_title("Sales by Region")
 ax.set_xlabel("Region")
 ax.set_ylabel("Sales")
+
 plt.xticks(rotation=45)
 
 st.pyplot(fig)
 
-# ---------------------------------------
-# Gross Profit by Region
-# ---------------------------------------
+
+
+# -----------------------------
+# Gross Profit By Region
+# -----------------------------
 
 st.header("💰 Gross Profit by Region")
 
-profit_region = filtered_df.groupby("Region")["Gross Profit"].sum()
+
+profit_region = (
+    filtered_df.groupby("Region")["Gross Profit"]
+    .sum()
+)
+
 
 fig, ax = plt.subplots(figsize=(8,5))
-profit_region.plot(kind="bar", ax=ax)
+
+profit_region.plot(
+    kind="bar",
+    ax=ax
+)
 
 ax.set_title("Gross Profit by Region")
 ax.set_xlabel("Region")
@@ -88,16 +133,27 @@ plt.xticks(rotation=45)
 
 st.pyplot(fig)
 
-# ---------------------------------------
-# Sales by Ship Mode
-# ---------------------------------------
+
+
+# -----------------------------
+# Sales By Ship Mode
+# -----------------------------
 
 st.header("🚚 Sales by Ship Mode")
 
-ship_sales = filtered_df.groupby("Ship Mode")["Sales"].sum()
+
+ship_sales = (
+    filtered_df.groupby("Ship Mode")["Sales"]
+    .sum()
+)
+
 
 fig, ax = plt.subplots(figsize=(7,5))
-ship_sales.plot(kind="bar", ax=ax)
+
+ship_sales.plot(
+    kind="bar",
+    ax=ax
+)
 
 ax.set_title("Sales by Ship Mode")
 ax.set_xlabel("Ship Mode")
@@ -107,16 +163,31 @@ plt.xticks(rotation=45)
 
 st.pyplot(fig)
 
-# ---------------------------------------
-# Monthly Sales Trend
-# ---------------------------------------
 
-filtered_df["Month"] = filtered_df["Order Date"].dt.month_name()
+
+# -----------------------------
+# Monthly Sales Trend
+# -----------------------------
+
+st.header("📅 Monthly Sales Trend")
+
+
+filtered_df = filtered_df.copy()
+
+
+filtered_df["Month"] = (
+    filtered_df["Order Date"]
+    .dt.month_name()
+)
+
 
 month_order = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January","February","March",
+    "April","May","June",
+    "July","August","September",
+    "October","November","December"
 ]
+
 
 monthly_sales = (
     filtered_df.groupby("Month")["Sales"]
@@ -124,9 +195,9 @@ monthly_sales = (
     .reindex(month_order)
 )
 
-st.header("📅 Monthly Sales Trend")
 
 fig, ax = plt.subplots(figsize=(10,5))
+
 
 monthly_sales.plot(
     kind="line",
@@ -135,21 +206,25 @@ monthly_sales.plot(
     ax=ax
 )
 
+
 ax.set_title("Monthly Sales Trend")
 ax.set_xlabel("Month")
 ax.set_ylabel("Sales")
 
+
 plt.xticks(rotation=45)
+
 
 st.pyplot(fig)
 
-# Part 3: Top Products, Customers, States & Cities
 
-# ---------------------------------------
-# Top 10 Products
-# ---------------------------------------
+
+# -----------------------------
+# Top Products
+# -----------------------------
 
 st.header("🏆 Top 10 Products by Sales")
+
 
 top_products = (
     filtered_df.groupby("Product Name")["Sales"]
@@ -158,19 +233,33 @@ top_products = (
     .head(10)
 )
 
+
 st.dataframe(top_products)
 
+
 fig, ax = plt.subplots(figsize=(10,5))
-top_products.sort_values().plot(kind="barh", ax=ax)
+
+
+top_products.sort_values().plot(
+    kind="barh",
+    ax=ax
+)
+
+
 ax.set_title("Top 10 Products by Sales")
 ax.set_xlabel("Sales")
+
+
 st.pyplot(fig)
 
-# ---------------------------------------
-# Top 10 Customers
-# ---------------------------------------
+
+
+# -----------------------------
+# Top Customers
+# -----------------------------
 
 st.header("👥 Top 10 Customers")
+
 
 top_customers = (
     filtered_df.groupby("Customer ID")["Sales"]
@@ -179,13 +268,17 @@ top_customers = (
     .head(10)
 )
 
+
 st.dataframe(top_customers)
 
-# ---------------------------------------
-# Top 10 States
-# ---------------------------------------
+
+
+# -----------------------------
+# Top States
+# -----------------------------
 
 st.header("📍 Top 10 States")
+
 
 top_states = (
     filtered_df.groupby("State/Province")["Sales"]
@@ -194,17 +287,30 @@ top_states = (
     .head(10)
 )
 
+
 fig, ax = plt.subplots(figsize=(10,5))
-top_states.sort_values().plot(kind="barh", ax=ax)
+
+
+top_states.sort_values().plot(
+    kind="barh",
+    ax=ax
+)
+
+
 ax.set_title("Top 10 States by Sales")
 ax.set_xlabel("Sales")
+
+
 st.pyplot(fig)
 
-# ---------------------------------------
-# Top 10 Cities
-# ---------------------------------------
+
+
+# -----------------------------
+# Top Cities
+# -----------------------------
 
 st.header("🏙️ Top 10 Cities")
+
 
 top_cities = (
     filtered_df.groupby("City")["Sales"]
@@ -213,23 +319,37 @@ top_cities = (
     .head(10)
 )
 
+
 fig, ax = plt.subplots(figsize=(10,5))
-top_cities.sort_values().plot(kind="barh", ax=ax)
+
+
+top_cities.sort_values().plot(
+    kind="barh",
+    ax=ax
+)
+
+
 ax.set_title("Top 10 Cities by Sales")
 ax.set_xlabel("Sales")
+
+
 st.pyplot(fig)
 
-# Part 4: Business Insights
 
-# ---------------------------------------
+
+# -----------------------------
 # Business Insights
-# ---------------------------------------
+# -----------------------------
 
 st.header("💡 Business Insights")
 
+
 total_sales = filtered_df["Sales"].sum()
+
 total_profit = filtered_df["Gross Profit"].sum()
+
 avg_delivery = filtered_df["Delivery Days"].mean()
+
 
 highest_region = (
     filtered_df.groupby("Region")["Sales"]
@@ -237,13 +357,17 @@ highest_region = (
     .idxmax()
 )
 
+
 highest_shipmode = (
     filtered_df.groupby("Ship Mode")["Sales"]
     .sum()
     .idxmax()
 )
 
-st.success(f"""
+
+
+st.success(
+f"""
 ✅ Total Sales: ${total_sales:,.2f}
 
 ✅ Total Gross Profit: ${total_profit:,.2f}
@@ -253,57 +377,77 @@ st.success(f"""
 ✅ Best Performing Region: {highest_region}
 
 ✅ Best Performing Ship Mode: {highest_shipmode}
-""")
+"""
+)
 
-# ---------------------------------------
+
+
+# -----------------------------
 # Dataset Summary
-# ---------------------------------------
+# -----------------------------
 
 st.header("📋 Dataset Summary")
 
+
 summary = pd.DataFrame({
-    "Metric": [
-        "Total Records",
-        "Total Orders",
-        "Total Products",
-        "Total Customers",
-        "Total Regions"
-    ],
-    "Value": [
-        len(filtered_df),
-        filtered_df["Order ID"].nunique(),
-        filtered_df["Product ID"].nunique(),
-        filtered_df["Customer ID"].nunique(),
-        filtered_df["Region"].nunique()
-    ]
+
+"Metric":[
+"Total Records",
+"Total Orders",
+"Total Products",
+"Total Customers",
+"Total Regions"
+],
+
+"Value":[
+
+len(filtered_df),
+
+filtered_df["Order ID"].nunique(),
+
+filtered_df["Product ID"].nunique(),
+
+filtered_df["Customer ID"].nunique(),
+
+filtered_df["Region"].nunique()
+
+]
+
 })
+
 
 st.dataframe(summary)
 
-# ---------------------------------------
+
+
+# -----------------------------
 # Conclusion
-# ---------------------------------------
+# -----------------------------
 
 st.header("📌 Conclusion")
 
-st.info("""
+
+st.info(
+"""
 This dashboard analyzes shipping efficiency, sales performance,
 customer behavior, and regional performance of Nassau Candy Distributor.
 
 The analysis helps businesses identify high-performing regions,
 optimize shipping methods, improve delivery performance,
 and make better data-driven decisions.
-""")
+"""
+)
 
-# ---------------------------------------
+
+
 # Footer
-# ---------------------------------------
 
 st.markdown("---")
 
 st.markdown(
-    "### 👨‍💻 Developed by Kartik Dnyaneshwar Borikar"
+"### 👨‍💻 Developed by Kartik Dnyaneshwar Borikar"
 )
 
-st.caption("Data Analyst Fellowship Project | Unified Mentor")
-
+st.caption(
+"Data Analyst Fellowship Project | Unified Mentor"
+)
