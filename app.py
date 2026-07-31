@@ -13,17 +13,21 @@ st.write("Nassau Candy Distributor Dashboard")
 
 @st.cache_data
 def load_data():
+    # Load Dataset
     df = pd.read_csv("Nassau_Candy_Distributor.csv")
 
+    # Convert Date Columns
     df["Order Date"] = pd.to_datetime(df["Order Date"])
-df["Ship Date"] = pd.to_datetime(df["Ship Date"])
+    df["Ship Date"] = pd.to_datetime(df["Ship Date"])
 
+    # Calculate Delivery Days
     df["Delivery Days"] = (
         df["Ship Date"] - df["Order Date"]
     ).dt.days
 
     return df
 
+# Load Data
 df = load_data()
 
 st.sidebar.header("Filters")
@@ -37,46 +41,6 @@ ship_mode = st.sidebar.selectbox(
     "Select Ship Mode",
     ["All"] + sorted(df["Ship Mode"].unique())
 )
-
-filtered_df = df.copy()
-
-if region != "All":
-    filtered_df = filtered_df[
-        filtered_df["Region"] == region
-    ]
-
-if ship_mode != "All":
-    filtered_df = filtered_df[
-        filtered_df["Ship Mode"] == ship_mode
-    ]
-
-st.header("Dataset Preview")
-st.dataframe(filtered_df.head())
-
-st.header("Key Performance Indicators")
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric(
-    "Total Sales",
-    f"${filtered_df['Sales'].sum():,.2f}"
-)
-
-col2.metric(
-    "Orders",
-    filtered_df["Order ID"].nunique()
-)
-
-col3.metric(
-    "Gross Profit",
-    f"${filtered_df['Gross Profit'].sum():,.2f}"
-)
-
-col4.metric(
-    "Avg Delivery Days",
-    round(filtered_df["Delivery Days"].mean(), 2)
-)
-
 
 
 # Part 2: Charts & Analysis
