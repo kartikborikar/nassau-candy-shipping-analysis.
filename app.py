@@ -15,8 +15,8 @@ st.write("Nassau Candy Distributor Dashboard")
 def load_data():
     df = pd.read_csv("Nassau_Candy_Distributor.csv")
 
-    df["Order Date"] = pd.to_datetime(df["Order Date"], dayfirst=True)
-    df["Ship Date"] = pd.to_datetime(df["Ship Date"], dayfirst=True)
+    df["Order Date"] = pd.to_datetime(df["Order Date"])
+df["Ship Date"] = pd.to_datetime(df["Ship Date"])
 
     df["Delivery Days"] = (
         df["Ship Date"] - df["Order Date"]
