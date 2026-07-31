@@ -17,8 +17,6 @@ def load_data():
     df = pd.read_csv("Nassau_Candy_Distributor.csv")
 
     # Convert Date Columns
-    df["Order Date"] = pd.to_datetime(df["Order Date"])
-    df["Ship Date"] = pd.to_datetime(df["Ship Date"])
     df["Order Date"] = pd.to_datetime(
     df["Order Date"],
     errors="coerce"
