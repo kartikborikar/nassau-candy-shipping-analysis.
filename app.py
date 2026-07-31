@@ -79,7 +79,7 @@ col4.metric(
 
 
 
-Part 2: Charts & Analysis
+# Part 2: Charts & Analysis
 
 # ---------------------------------------
 # Sales by Region
@@ -172,7 +172,7 @@ plt.xticks(rotation=45)
 
 st.pyplot(fig)
 
-Part 3: Top Products, Customers, States & Cities
+# Part 3: Top Products, Customers, States & Cities
 
 # ---------------------------------------
 # Top 10 Products
@@ -248,7 +248,7 @@ ax.set_title("Top 10 Cities by Sales")
 ax.set_xlabel("Sales")
 st.pyplot(fig)
 
-Part 4: Business Insights
+# Part 4: Business Insights
 
 # ---------------------------------------
 # Business Insights
