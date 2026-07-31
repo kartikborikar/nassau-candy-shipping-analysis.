@@ -19,6 +19,15 @@ def load_data():
     # Convert Date Columns
     df["Order Date"] = pd.to_datetime(df["Order Date"])
     df["Ship Date"] = pd.to_datetime(df["Ship Date"])
+    df["Order Date"] = pd.to_datetime(
+    df["Order Date"],
+    errors="coerce"
+)
+
+df["Ship Date"] = pd.to_datetime(
+    df["Ship Date"],
+    errors="coerce"
+)
 
     # Calculate Delivery Days
     df["Delivery Days"] = (
